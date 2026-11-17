@@ -4,10 +4,28 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MinhaONG</title>
+    <title>ONG do Igor</title>
   </head>
   <body>
-    <div id="app"></div>
+    <header class="topo">
+      <div class="topo-linha">
+        <a class="marca" href="#/doadores">ONG do Igor</a>
+        <div id="sessao" class="sessao" hidden>
+          <span id="nome-usuario"></span>
+          <button type="button" id="sair" class="sair">Sair</button>
+        </div>
+      </div>
+      <nav id="menu" aria-label="Principal" hidden>
+        <a href="#/doadores">Doadores</a>
+        <a href="#/doacoes/nova">Registrar doação</a>
+        <a href="#/doacoes">Doações</a>
+      </nav>
+    </header>
+
+    <main id="app"></main>
+
+    <footer class="rodape">API: <span id="status-api">verificando...</span></footer>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

@@ -1,21 +1,56 @@
 import "./style.css";
+import { verificarSaude } from "./api.js";
+import { telaDoacoes, telaNovaDoacao } from "./pages/doacoes.js";
+import { telaDoadores } from "./pages/doadores.js";
+import { telaLogin } from "./pages/login.js";
+import { encerrarSessao, sessaoAtual } from "./sessao.js";
 
 const app = document.querySelector("#app");
-app.innerHTML = `
-  <h1>MinhaONG</h1>
-  <p>Status da API: <strong id="status">verificando...</strong></p>
-`;
+const menu = document.querySelector("#menu");
+const areaSessao = document.querySelector("#sessao");
+const nomeUsuario = document.querySelector("#nome-usuario");
 
-async function verificarApi() {
-  const status = document.querySelector("#status");
-  try {
-    const resposta = await fetch("/api/health");
-    const dados = await resposta.json();
-    const hora = new Date(dados.hora).toLocaleString("pt-BR");
-    status.textContent = `${dados.status} (${hora})`;
-  } catch {
-    status.textContent = "API fora do ar";
+// Cada endereço depois do # mostra uma tela
+const rotas = {
+  "#/login": telaLogin,
+  "#/doadores": telaDoadores,
+  "#/doacoes/nova": telaNovaDoacao,
+  "#/doacoes": telaDoacoes,
+};
+
+function navegar() {
+  const sessao = sessaoAtual();
+  let rota = rotas[location.hash] ? location.hash : "#/doadores";
+
+  // Sem login, só a tela de login. Já logado, não faz sentido voltar a ela.
+  if (!sessao && rota !== "#/login") rota = "#/login";
+  if (sessao && rota === "#/login") rota = "#/doadores";
+  if (location.hash !== rota) {
+    location.hash = rota; // dispara hashchange, que chama navegar() de novo
+    return;
   }
+
+  menu.hidden = !sessao;
+  areaSessao.hidden = !sessao;
+  nomeUsuario.textContent = sessao?.usuario.nome ?? "";
+
+  for (const link of menu.querySelectorAll("a")) {
+    if (link.getAttribute("href") === rota) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+  rotas[rota](app);
 }
 
-verificarApi();
+document.querySelector("#sair").addEventListener("click", () => {
+  encerrarSessao();
+  location.hash = "#/login";
+});
+
+window.addEventListener("hashchange", navegar);
+navegar();
+
+// Indicador no rodapé, herdado da Aula 1
+const statusApi = document.querySelector("#status-api");
+verificarSaude()
+  .then((saude) => (statusApi.textContent = `${saude.status}, banco: ${saude.banco}`))
+  .catch(() => (statusApi.textContent = "fora do ar"));
